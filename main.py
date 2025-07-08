@@ -39,9 +39,25 @@ KEYWORDS = [
 
 EVENTS_RSS_URL = "https://coinmarketcal.com/en/rss/events"
 
-sent_titles = set()
+SENT_TITLES_FILE = "sent_titles.txt"
 sent_images = set()
 last_prices = {"bitcoin": None, "ethereum": None, "btc_dominance": None}
+
+
+def load_sent_titles():
+    try:
+        with open(SENT_TITLES_FILE, "r", encoding="utf-8") as f:
+            return set(line.strip() for line in f if line.strip())
+    except FileNotFoundError:
+        return set()
+
+
+def save_sent_title(title):
+    with open(SENT_TITLES_FILE, "a", encoding="utf-8") as f:
+        f.write(title + "\n")
+
+
+sent_titles = load_sent_titles()
 
 
 def clean_html(raw_html):
@@ -127,6 +143,7 @@ def fetch_and_send_news():
                     image_url = extract_image_url(entry)
                     send_to_telegram(message, entry.title, image_url)
                     sent_titles.add(entry.title)
+                    save_sent_title(entry.title)
         time.sleep(4)
 
 
